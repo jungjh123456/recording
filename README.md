@@ -1,70 +1,53 @@
-# Getting Started with Create React App
+# Record RTC 를 이용한 녹음 하기
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+js에는 녹음기능을 하기 위해 navigator 객체에서 미디아를 가져와서 녹음을 할 수 있다.
 
-## Available Scripts
+```js
+navigator.mediaDevices.getUserMedia({audio : true}).then(...);
+```
 
-In the project directory, you can run:
+이렇게 권한을 얻고 녹음 기능을 만들수 있다.
 
-### `npm start`
+하지만 더 여러 옵션들을 편리하게 주기 위해 recordRTC라는 라이브러리를 사용하였다.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+사용 방법은 간단 하다.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```js
+let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+```
 
-### `npm test`
+이렇게 권한을 가져오고
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+그렇게 해서 첫번째 콜백에는 stream을 담고 두번째는 옵션을 줄 수 잇다.
 
-### `npm run build`
+```js
+let recorder = new RecordRTCPromisesHandler(stream, rtcSession);
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+rtcSession은 녹음에 대한 여러 옵션들을 줄 수 있다.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```js
+const rtcSession = {
+  type: "audio",
+  mimeType: "audio/webm;codecs=pcm",
+  audio: true,
+  // recorderType: StereoAudioRecorder,
+  disableLogs: false,
+  numberOfAudioChannels: 1,
+  desiredSampRate: 16000,
+  bufferSize: 16384,
+  // sampleRate: 48000,
+  // desiredSampleRate: 16000,
+  timeSlice: 1000,
+};
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+이런식으로 오디오 채널이나 버퍼사이즈, 그리고 mimeType까지 줄 수 있다.
 
-### `npm run eject`
+```js
+await recorder.startRecording();
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+이런식으로 recorder.startRecording()을 하면 녹음이 시작된다.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+그리고 저 stream과 recorder를 state에 담아서 저장 한 뒤 await record?.stopRecording();, 이나 await record.pauseRecording(); 을 사용하여 정지,중지, 다시 시작을 구현 할 수 있다.
